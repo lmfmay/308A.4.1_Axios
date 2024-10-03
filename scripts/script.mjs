@@ -39,16 +39,15 @@ async function initialLoad() {
         breedSelect.appendChild(breedOption);
     });
 }
-
-breedSelect.addEventListener(`click`,initialLoad)
+initialLoad()
+//breedSelect.addEventListener(`click`,initialLoad)
 breedSelect.addEventListener(`change`,carouselHandler)
 
 async function carouselHandler() {
     //get images of breed using axios
     let id = breedSelect.value
-    const {data,durationInMS} = await axios.get (`https://api.thecatapi.com/v1/images/search?limit=20&breed_ids=${id}`);
-    console.log(`Request took ${durationInMS} milliseconds.`);
-    console.log(data)
+    const {data,durationInMS,startTime} = await axios.get (`https://api.thecatapi.com/v1/images/search?limit=20&breed_ids=${id}`);
+    console.log(`Response took ${durationInMS} milliseconds.`);
     
     //getting imgAlt for carousel item param using breed name.
     let catimgAlt = data.map((cat)=>cat.breeds[0])
@@ -62,7 +61,7 @@ async function carouselHandler() {
     funFact = funFact[0].description
     infoDump.innerHTML = funFact;
 
-    // //retrieve url and id params from jsonData for each cat image
+    // //retrieve url and id params for each cat image
     data.forEach(cat => {
         let imgSrc = Carousel.createCarouselItem(cat.url,catimgAlt,cat.id);
         Carousel.appendCarousel(imgSrc);
@@ -73,11 +72,11 @@ async function carouselHandler() {
  * 5. Add axios interceptors to log the time between request and response to the console.
  * - Hint: you already have access to code that does this!
  * - Add a console.log statement to indicate when requests begin.
- * - As an added challenge, try to do this on your own without referencing the lesson material.
  */
 axios.interceptors.request.use(request => {
     request.metadata = request.metadata || {};
     request.metadata.startTime = new Date().getTime();
+    //console.log(`Request began at ${new Date(request.metadata.startTime)}.`)
     return request;
 });
 
@@ -85,6 +84,7 @@ axios.interceptors.response.use(
     (response) => {
         response.config.metadata.endTime = new Date().getTime();
         response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+        console.log(`Request began at ${new Date(response.config.metadata.startTime)}.`)
         return response;
     },
     (error) => {
