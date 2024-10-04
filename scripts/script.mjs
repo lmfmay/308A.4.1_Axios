@@ -82,6 +82,7 @@ axios.interceptors.request.use(request => {
     //In your request interceptor, set the width of the progressBar element to 0%.
     progressBar.style.width = `0%`;
     progressBar.innerHTML = `0%`;
+    document.body.style.cursor = 'progress';
     return request;
 });
 
@@ -89,11 +90,13 @@ axios.interceptors.response.use(
     (response) => {
         response.config.metadata.endTime = new Date().getTime();
         response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+        document.body.style.cursor = 'default';
         return response;
     },
     (error) => {
         error.config.metadata.endTime = new Date().getTime();
         error.durationInMS = error.config.metadata.endTime - error.config.metadata.startTime;
+        document.body.style.cursor = 'default';
         throw error;
 });
 /**
