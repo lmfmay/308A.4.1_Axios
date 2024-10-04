@@ -46,7 +46,9 @@ breedSelect.addEventListener(`change`,carouselHandler)
 async function carouselHandler() {
     //get images of breed using axios
     let id = breedSelect.value
-    const {data,durationInMS,startTime} = await axios.get (`https://api.thecatapi.com/v1/images/search?limit=20&breed_ids=${id}`);
+    const {data,durationInMS} = await axios.get (`https://api.thecatapi.com/v1/images/search?limit=20&breed_ids=${id}`,{
+        onDownloadProgress: updateProgess
+    });
     console.log(`Response took ${durationInMS} milliseconds.`);
     
     //getting imgAlt for carousel item param using breed name.
@@ -76,7 +78,10 @@ async function carouselHandler() {
 axios.interceptors.request.use(request => {
     request.metadata = request.metadata || {};
     request.metadata.startTime = new Date().getTime();
-    //console.log(`Request began at ${new Date(request.metadata.startTime)}.`)
+    console.log(`Request began at ${new Date(request.metadata.startTime)}.`)
+    //In your request interceptor, set the width of the progressBar element to 0%.
+    progressBar.style.width = `0%`;
+    progressBar.innerHTML = `0%`;
     return request;
 });
 
@@ -84,7 +89,6 @@ axios.interceptors.response.use(
     (response) => {
         response.config.metadata.endTime = new Date().getTime();
         response.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
-        console.log(`Request began at ${new Date(response.config.metadata.startTime)}.`)
         return response;
     },
     (error) => {
@@ -107,7 +111,14 @@ axios.interceptors.response.use(
  *   once or twice per request to this API. This is still a concept worth familiarizing yourself
  *   with for future projects.
  */
-
+function updateProgess(event){
+    const percentage = Math.round((event.loaded * 100) / event.total);
+    console.log(`Download progress: ${percentage}%`);
+    if (progressBar) {
+        progressBar.style.width = `${percentage}%`;
+        progressBar.innerHTML = `${percentage}%`;
+    }
+}
 /**
  * 7. As a final element of progress indication, add the following to your axios interceptors:
  * - In your request interceptor, set the body element's cursor style to "progress."
